@@ -492,7 +492,6 @@ var Pacman = /*#__PURE__*/function () {
   }, {
     key: "handleKeyInput",
     value: function handleKeyInput(e, objectExist) {
-      console.log(e);
       var dir;
 
       if (e.keyCode >= 37 && e.keyCode <= 40) {
@@ -661,7 +660,41 @@ function gameLoop(pacman, ghosts) {
   ghosts.forEach(function (ghost) {
     return gameBoard.moveCharacter(ghost);
   });
-  checkCollision(pacman, ghosts);
+  checkCollision(pacman, ghosts); // Check if Pacman eats a dot
+
+  if (gameBoard.objectExist(pacman.pos, _setup.OBJECT_TYPE.DOT)) {
+    gameBoard.removeObject(pacman.pos, [_setup.OBJECT_TYPE.DOT]);
+    gameBoard.dotCount--;
+    score += 10;
+  } // Check if Pacman eats a powerPill
+
+
+  if (gameBoard.objectExist(pacman.pos, _setup.OBJECT_TYPE.PILL)) {
+    gameBoard.removeObject(pacman.pos, [_setup.OBJECT_TYPE.PILL]);
+    pacman.powerPill = true;
+    score += 50;
+    clearTimeout(powerPillTimer);
+    powerPillTimer = setTimeout(function () {
+      return pacman.powerPill = false;
+    }, POWER_PILL_TIME);
+  } // Change ghost score mode depends on PowerPill
+
+
+  if (pacman.powerPill !== powerPillActive) {
+    powerPillActive = pacman.powerPill;
+    ghosts.forEach(function (ghost) {
+      return ghost.isScared = pacman.powerPill;
+    });
+  } // Check if all dots have been eaten
+
+
+  if (gameBoard.dotCount === 0) {
+    gameWin = true;
+    gameOver(pacman, ghosts);
+  } //Show the score
+
+
+  scoreTable.innerHTML = score;
 }
 
 function startGame() {
@@ -711,7 +744,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "58858" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "61927" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
